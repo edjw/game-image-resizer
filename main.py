@@ -1,7 +1,9 @@
 from string import punctuation
 from os.path import splitext
 from os import remove, makedirs
+from time import sleep
 from boardgamegeek import BoardGameGeek
+from boardgamegeek.exceptions import BoardGameGeekError, BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError
 from urllib.request import urlretrieve
 from PIL import Image
 
@@ -17,12 +19,38 @@ def get_list_of_games():
 def get_image_links(all_games):
     # dictionary to put all BGG game names and game links in
     all_names_and_links = {}
+    number_of_games = str(len(all_games))
+    unfindable_games = []
     bgg = BoardGameGeek()
     for game in all_games:
-        game = bgg.game(game)
-        game_name = game.name
-        game_image_link = game.image
-        all_names_and_links.update({game_name: game_image_link})
+        index = str(all_games.index(game) + 1)
+        print(index + " / " + number_of_games + " – " + game)
+
+        try:
+            game_name = bgg.game(game).name  # Russian Railroads; taken straight from games.txt
+            game_image_link = bgg.games(game).image
+            # https://cf.geekdo-images.com/images/pic1772936.jpg
+
+            all_names_and_links.update({game_name: game_image_link})
+
+            # The rate limiting on BGG's API is strict
+            # Wait 5 seconds between requests
+            sleep(5)
+
+        except (BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError, AttributeError):
+            unfindable_games.append(game)
+            sleep(5)
+            continue
+
+        except (BoardGameGeekError):
+            unfindable_games.append(game)
+            sleep(5)
+            continue
+
+
+    unfindable_games = ", ".join(unfindable_games)
+    print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nEither: a) the game in your 'games.txt' doesn't precisely match the name of the game in Board Game Geek's database, b) the game isn't in Board Game Geek's database, or c) the request to Board Game Geek timed out.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n\nDownloading and processsing the found images now...\n__________\n")
+
     return all_names_and_links
 
 
@@ -52,7 +80,9 @@ def download_images(all_names_and_links):
         # downloading the link to /game_images/name_of_game.jpg
         downloaded_image = urlretrieve(
             game_image_link, "game_images/" + game_name_plus_format)
+
         games_and_image_paths.update({game_name: downloaded_image[0]})
+
     return games_and_image_paths
 
 
@@ -69,9 +99,10 @@ def resize_images(games_and_image_paths):
         )
         background.save("game_images/" + game + ".png")
         remove(image_file)
+    print("\nFinished. Your images should be in a folder called 'game_images' now.\n\n")
 
 
-# running the program
+# Running the program
 
 if __name__ == "__main__":
     all_games = get_list_of_games()
