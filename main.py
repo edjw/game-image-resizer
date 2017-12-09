@@ -19,42 +19,83 @@ def get_list_of_games():
 def get_image_links(all_games):
     # dictionary to put all BGG game names and game links in
     all_names_and_links = {}
-    number_of_games = str(len(all_games))
+
+    # games that absolutely couldn't be found
     unfindable_games = []
+
+    # games that the program guessed the right name for
+    guessed_games = []
+
+    # for the progress counter
+    number_of_games = str(len(all_games))
+
+    print("\nGetting the links to the images from Board Game Geek...\n")
+
     bgg = BoardGameGeek()
     for game in all_games:
         index = str(all_games.index(game) + 1)
         print(index + " / " + number_of_games + " – " + game)
 
         try:
-            game_name = bgg.game(game).name  # Russian Railroads; taken straight from games.txt
-            game_image_link = bgg.games(game).image
-            # https://cf.geekdo-images.com/images/pic1772936.jpg
+            # This will work when name given exactly matches BGG's name
+            game_name = bgg.game(game).name  # Russian Railroads
 
-            all_names_and_links.update({game_name: game_image_link})
-
-            # The rate limiting on BGG's API is strict
-            # Wait 5 seconds between requests
-            sleep(5)
-
-        except (BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError, AttributeError):
+        # If there's some other error
+        except (BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError):
             unfindable_games.append(game)
             sleep(5)
             continue
 
-        except (BoardGameGeekError):
-            unfindable_games.append(game)
+        # If there's a typo or eg, 'Caverna' not 'Caverna: The Cave Farmers'
+        except (BoardGameGeekError, AttributeError):
+            print('Trying to find the right game...\n')
+            # Try to find unfindable games
+            # Returns highest ranked game that loosely matches
+            # the incorrect game name in games.txt
+            # Eg, Ticket to Ride Europe should return Ticket to Ride: Europe
+            # but will not return some unofficial expansion pack
+
+            # Get a list of possible BGG ids that the game could be
+            potential_games = bgg.search(game)
+
+            # extract just the ids from that list and make new list
+            potential_ids = [str(potential_game).split()[-1][:-1] for potential_game in potential_games]
+
+            # get the highest ranked game rank from the ids in potential_ids
+            highest_rank = min([bgg.game(game_id=potential_id).ranks[0]['value'] for potential_id in potential_ids if bgg.game(game_id=potential_id).ranks[0]['value'] is not None])
+
+            # get the game name that has the highest rank in that list
+            game_name = [bgg.game(game_id=potential_id).name for potential_id in potential_ids if bgg.game(game_id=potential_id).ranks[0]['value'] == highest_rank]
+
+            game_name = game_name[0]
+            guessed_games.append(game_name)
+            print("Assuming that the game you're looking for is {}...\n".format(game_name))
+
             sleep(5)
-            continue
+            pass
 
+        # Continues here once game name is established
+        game_image_link = bgg.game(game_name).image
+        # eg. https://cf.geekdo-images.com/images/pic1772936.jpg
 
-    unfindable_games = ", ".join(unfindable_games)
-    print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nEither: a) the game in your 'games.txt' doesn't precisely match the name of the game in Board Game Geek's database, b) the game isn't in Board Game Geek's database, or c) the request to Board Game Geek timed out.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n\nDownloading and processsing the found images now...\n__________\n")
+        print("Successfully found {}.\n".format(game_name))
 
-    return all_names_and_links
+        all_names_and_links.update({game_name: game_image_link})
+
+        # The rate limiting on BGG's API is strict
+        # Wait 5 seconds between requests
+        sleep(5)
+
+    if len(unfindable_games) > 0:
+        unfindable_games = ", ".join(unfindable_games)
+
+        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nEither: a) the game isn't in Board Game Geek's database, or b) the request to Board Game Geek timed out.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file. Make sure the names exactly match the name in Board Game Geek's database\n\n__________")
+
+    return all_names_and_links, guessed_games
 
 
 def download_images(all_names_and_links):
+    print("\nDownloading all the images...\n")
     games_and_image_paths = {}
 
     for game_name in all_names_and_links:
@@ -86,7 +127,22 @@ def download_images(all_names_and_links):
     return games_and_image_paths
 
 
-def resize_images(games_and_image_paths):
+def resize_images(games_and_image_paths, guessed_games):
+    print("\nResizing all the images...\n")
+
+    processed_guessed_games = []
+
+    for guessed_game in guessed_games:
+        guessed_game = guessed_game.lower()
+
+        # removing punctuation from game name
+        remove_punctuation = str.maketrans('', '', punctuation)
+        guessed_game = guessed_game.translate(remove_punctuation)
+
+        # replacing spaces with underscore
+        guessed_game = guessed_game.replace(" ", "_")
+        processed_guessed_games.append(guessed_game)
+
     for game in games_and_image_paths:
         image_file = games_and_image_paths[game]
         size = (500, 500)
@@ -97,15 +153,26 @@ def resize_images(games_and_image_paths):
             image, (int((size[0] - image.size[0]) / 2),
                     int((size[1] - image.size[1]) / 2))
         )
-        background.save("game_images/" + game + ".png")
+
+        if game in processed_guessed_games:
+            makedirs("game_images/check_these_images", exist_ok=True)
+            background.save("game_images/check_these_images/" + game + ".png")
+
+        else:
+            background.save("game_images/" + game + ".png")
+
         remove(image_file)
-    print("\nFinished. Your images should be in a folder called 'game_images' now.\n\n")
+
+    print("\nFinished. Your images should be in a folder called 'game_images' now.\n")
+
+    if len(processed_guessed_games) > 0:
+        print("Images for that the program guessed which game you meant are in a folder called ;'game_images/check_these_images'.\n")
 
 
 # Running the program
 
 if __name__ == "__main__":
     all_games = get_list_of_games()
-    all_names_and_links = get_image_links(all_games)
+    all_names_and_links, guessed_games = get_image_links(all_games)
     games_and_image_paths = download_images(all_names_and_links)
-    resize_images(games_and_image_paths)
+    resize_images(games_and_image_paths, guessed_games)

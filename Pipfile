@@ -8,7 +8,7 @@ name = "pypi"
 [packages]
 
 boardgamegeek = "*"
-pillow = "*"
+Pillow = "*"
 
 
 [dev-packages]
