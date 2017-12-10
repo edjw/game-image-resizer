@@ -22,7 +22,7 @@ If you make heavy use of BoardGameGeek's API, images and image hosting using thi
 
 or
 
-`pipenv install boardgamegeek, pillow`
+`pipenv install boardgamegeek pillow`
 
 Make a text file called `games.txt` with a game's name on each line.
 
@@ -36,4 +36,4 @@ Games that only loosely match a game on Board Game Geek will be saved in a subfo
 
 ## To Do
 
-* make it easy for others to use: packaged up for mac/windows/etc with file picker instead of forcing use of games.txt
+* make it easy for others to use: packaged up for mac/windows/etc with a GUI and file picker instead of forcing use of games.txt
