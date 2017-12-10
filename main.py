@@ -1,23 +1,35 @@
 from string import punctuation
+from sys import argv, version_info
 from os.path import splitext
 from os import remove, makedirs
 from time import sleep
 from boardgamegeek import BoardGameGeek
 from boardgamegeek.exceptions import BoardGameGeekError, BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError
-from urllib.request import urlretrieve
 from PIL import Image
+
+if (version_info > (3, 0)):
+    from urllib.request import urlretrieve
+
+else:
+    from urllib2 import urlopen
+    from string import maketrans
+    from os.path import isdir
+    import logging
+    logging.basicConfig()
 
 
 def get_list_of_games():
     # list to put all game names in from games.txt
     all_games = []
-    try:
-        with open('games.txt', 'r') as fileobject:
+
+    if len(argv) == 2:
+        game_file = argv[1]
+        with open(game_file, 'r') as fileobject:
             all_games = [line.strip() for line in fileobject if str(line) != "\n"]
 
-    except(FileNotFoundError):
-        print("You need to have a file called 'games.txt' in the same folder as this program for this to work.")
-        # break
+    else:
+        print("You need to have a specify a .txt file after main.py\nThe right command is 'python main.py path/to/file.txt' (without quotes).")
+
     return all_games
 
 
@@ -38,13 +50,14 @@ def get_image_links(all_games):
         print("\nGetting the links to the images from Board Game Geek...\n")
 
     bgg = BoardGameGeek()
+
     for game in all_games:
         index = str(all_games.index(game) + 1)
-        print(index + " / " + number_of_games + " – " + game)
+        print(index + " / " + number_of_games + " - " + game)
 
         try:
             # This will work when name given exactly matches BGG's name
-            game_name = bgg.game(game).name  # Russian Railroads
+            game_name = bgg.game(game).name
 
         # If there's some other error
         except (BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError):
@@ -55,6 +68,7 @@ def get_image_links(all_games):
         # If there's a typo or eg, 'Caverna' not 'Caverna: The Cave Farmers'
         except (BoardGameGeekError, AttributeError):
             print('Trying to find the right game...\n')
+
             # Try to find unfindable games
             # Returns highest ranked game that loosely matches
             # the incorrect game name in games.txt
@@ -101,7 +115,7 @@ def get_image_links(all_games):
     if len(unfindable_games) > 0:
         unfindable_games = ", ".join(unfindable_games)
 
-        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nEither: a) the game isn't in Board Game Geek's database, or b) the request to Board Game Geek timed out.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n\n__________")
+        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nThe game probably isn't in Board Game Geek's database.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n\n__________")
 
     return all_names_and_links, guessed_games
 
@@ -121,7 +135,11 @@ def download_images(all_names_and_links):
         game_name = game_name.lower()
 
         # removing punctuation from game name
-        remove_punctuation = str.maketrans('', '', punctuation)
+        if (version_info > (3, 0)):
+            remove_punctuation = str.maketrans('', '', punctuation)
+        else:
+            remove_punctuation = maketrans(punctuation, ' '*len(punctuation))
+
         game_name = game_name.translate(remove_punctuation)
 
         # replacing spaces with underscore
@@ -131,13 +149,27 @@ def download_images(all_names_and_links):
         game_name_plus_format = game_name + file_format
 
         # making folder 'game_images'. no error if folder already exists
-        makedirs("game_images", exist_ok=True)
+        if (version_info > (3, 0)):
+            makedirs("game_images", exist_ok=True)
+
+        else:
+            try:
+                makedirs("game_images")
+            except OSError:
+                if not isdir("game_images"):
+                    raise
 
         # downloading the link to /game_images/name_of_game.jpg
-        downloaded_image = urlretrieve(
-            game_image_link, "game_images/" + game_name_plus_format)
+        if (version_info > (3, 0)):
+            downloaded_image = urlretrieve(game_image_link, "game_images/" + game_name_plus_format)
+            games_and_image_paths.update({game_name: downloaded_image[0]})
 
-        games_and_image_paths.update({game_name: downloaded_image[0]})
+        else:
+            response = urlopen(game_image_link)
+            game_path = "game_images/" + game_name_plus_format
+            with open(game_path, 'w') as f:
+                f.write(response.read())
+                games_and_image_paths.update({game_name: game_path})
 
     return games_and_image_paths
 
@@ -153,7 +185,11 @@ def resize_images(games_and_image_paths, guessed_games):
         guessed_game = guessed_game.lower()
 
         # removing punctuation from game name
-        remove_punctuation = str.maketrans('', '', punctuation)
+        if (version_info > (3, 0)):
+            remove_punctuation = str.maketrans('', '', punctuation)
+        else:
+            remove_punctuation = maketrans(punctuation, ' '*len(punctuation))
+
         guessed_game = guessed_game.translate(remove_punctuation)
 
         # replacing spaces with underscore
@@ -183,7 +219,16 @@ def resize_images(games_and_image_paths, guessed_games):
         )
 
         if game in processed_guessed_games:
-            makedirs("game_images/check_these_images", exist_ok=True)
+            if (version_info > (3, 0)):
+                makedirs("game_images/check_these_images", exist_ok=True)
+
+            else:
+                try:
+                    makedirs("game_images/check_these_images")
+                except OSError:
+                    if not isdir("game_images/check_these_images"):
+                        raise
+
             background.save("game_images/check_these_images/" + game + ".png")
 
         else:

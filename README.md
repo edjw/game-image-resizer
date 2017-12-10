@@ -18,17 +18,17 @@ If you make heavy use of BoardGameGeek's API, images and image hosting using thi
 
 ## How to use this
 
-`pip3 install boardgamegeek, pillow`
-
-or
+This should run on Python 3 and Python 2.
 
 `pipenv install boardgamegeek pillow`
 
-Make a text file called `games.txt` with a game's name on each line.
+or
 
-Save the file in the same folder as `main.py`
+`pip install boardgamegeek, pillow`
 
-Run `python main.py`
+Make a text file called something like `games.txt` with a game's name on each line. It can be stored anywhere.
+
+Run `python main.py path/to/games.txt`
 
 It will save the processed images in a folder called `game_images` in the same folder as `main.py`
 
@@ -36,4 +36,4 @@ Games that only loosely match a game on Board Game Geek will be saved in a subfo
 
 ## To Do
 
-* make it easy for others to use: packaged up for mac/windows/etc with a GUI and file picker instead of forcing use of games.txt
+* make it easy for others to use: packaged up for mac/windows/etc with a GUI and file picker instead of forcing use of text file
