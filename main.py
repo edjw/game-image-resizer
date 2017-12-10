@@ -162,8 +162,19 @@ def resize_images(games_and_image_paths, guessed_games):
 
     for game in games_and_image_paths:
         image_file = games_and_image_paths[game]
-        size = (500, 500)
         image = Image.open(image_file)
+
+        longest_dimension = max(image.size)
+
+        # If longest dimension is less than 500px
+        # Make a square of largest side
+        if longest_dimension < 500:
+            size = (longest_dimension, longest_dimension)
+
+        # Otherwise, crop the square to 500px
+        else:
+            size = (500, 500)
+
         image.thumbnail(size, Image.ANTIALIAS)
         background = Image.new('RGBA', size, (255, 255, 255, 0))
         background.paste(
@@ -178,7 +189,7 @@ def resize_images(games_and_image_paths, guessed_games):
         else:
             background.save("game_images/" + game + ".png")
 
-        # remove(image_file)
+        remove(image_file)
 
     if len(games_and_image_paths) > 0:
         print("\nFinished. Your images should be in a folder called 'game_images' now.\n")
