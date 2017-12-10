@@ -11,8 +11,13 @@ from PIL import Image
 def get_list_of_games():
     # list to put all game names in from games.txt
     all_games = []
-    with open('games.txt', 'r') as fileobject:
-        all_games = [line.strip() for line in fileobject if str(line) != "\n"]
+    try:
+        with open('games.txt', 'r') as fileobject:
+            all_games = [line.strip() for line in fileobject if str(line) != "\n"]
+
+    except(FileNotFoundError):
+        print("You need to have a file called 'games.txt' in the same folder as this program for this to work.")
+        # break
     return all_games
 
 
@@ -29,7 +34,8 @@ def get_image_links(all_games):
     # for the progress counter
     number_of_games = str(len(all_games))
 
-    print("\nGetting the links to the images from Board Game Geek...\n")
+    if len(all_games) > 0:
+        print("\nGetting the links to the images from Board Game Geek...\n")
 
     bgg = BoardGameGeek()
     for game in all_games:
@@ -57,6 +63,12 @@ def get_image_links(all_games):
 
             # Get a list of possible BGG ids that the game could be
             potential_games = bgg.search(game)
+
+            # If the search query returns 0 results
+            if len(potential_games) < 1:
+                unfindable_games.append(game)
+                print("Couldn't find {}\n".format(game))
+                continue
 
             # extract just the ids from that list and make new list
             potential_ids = [str(potential_game).split()[-1][:-1] for potential_game in potential_games]
@@ -89,13 +101,16 @@ def get_image_links(all_games):
     if len(unfindable_games) > 0:
         unfindable_games = ", ".join(unfindable_games)
 
-        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nEither: a) the game isn't in Board Game Geek's database, or b) the request to Board Game Geek timed out.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file. Make sure the names exactly match the name in Board Game Geek's database\n\n__________")
+        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nEither: a) the game isn't in Board Game Geek's database, or b) the request to Board Game Geek timed out.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n\n__________")
 
     return all_names_and_links, guessed_games
 
 
 def download_images(all_names_and_links):
-    print("\nDownloading all the images...\n")
+
+    if len(all_names_and_links) > 0:
+        print("\nDownloading all the images...\n")
+
     games_and_image_paths = {}
 
     for game_name in all_names_and_links:
@@ -128,7 +143,9 @@ def download_images(all_names_and_links):
 
 
 def resize_images(games_and_image_paths, guessed_games):
-    print("\nResizing all the images...\n")
+
+    if len(games_and_image_paths) > 0:
+        print("\nResizing all the images...\n")
 
     processed_guessed_games = []
 
@@ -161,12 +178,13 @@ def resize_images(games_and_image_paths, guessed_games):
         else:
             background.save("game_images/" + game + ".png")
 
-        remove(image_file)
+        # remove(image_file)
 
-    print("\nFinished. Your images should be in a folder called 'game_images' now.\n")
+    if len(games_and_image_paths) > 0:
+        print("\nFinished. Your images should be in a folder called 'game_images' now.\n")
 
     if len(processed_guessed_games) > 0:
-        print("Images for that the program guessed which game you meant are in a folder called ;'game_images/check_these_images'.\n")
+        print("If the program had to guess which game you meant then the images for that game are in a folder called 'game_images/check_these_images'.\n")
 
 
 # Running the program
