@@ -1,3 +1,6 @@
 .vscode
 game_images
 games.txt
+__pycache__
+build
+*.spec

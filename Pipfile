@@ -9,6 +9,7 @@ name = "pypi"
 
 boardgamegeek = "*"
 pillow = "*"
+pyinstaller = "*"
 
 
 [dev-packages]
