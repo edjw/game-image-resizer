@@ -12,7 +12,7 @@ try:
         from urllib.request import urlretrieve
 
     else:
-        import sys
+        from sys import setdefaultencoding
         from urllib2 import urlopen
         from string import maketrans
         from os.path import isdir
@@ -26,7 +26,7 @@ except(ImportError):
 # Setting encoding to UTF-8 for Python 2 users
 if version_info[0] < 3:
     reload(sys)
-    sys.setdefaultencoding('utf8')
+    setdefaultencoding('utf8')
 
 
 def get_list_of_games():
@@ -37,16 +37,22 @@ def get_list_of_games():
         # Py3 has this error
         FileNotFoundError
     except (NameError):
-        # Py2 doesn't so if hit FNFE then make it IOError
+        # Py2 doesn't so if FileNotFoundError then make it IOError
         FileNotFoundError = IOError
 
     try:
         game_file = argv[1]
+
+    except(IndexError):
+        print("\nYou need to give the program a text file (.txt) with a list of games in.\n")
+        game_file = input("Where is the text file on your computer? You can just drag and drop the file onto this window and press ENTER.\n-------\n").strip()
+
+    try:
         with open(game_file, 'r') as fileobject:
             all_games = [line.strip() for line in fileobject if str(line) != "\n"]
 
-    except(FileNotFoundError, IndexError):
-        print("\nYou need to specify a .txt file after main.py\nThe right command is 'python main.py path/to/file.txt' (without quotes).\n")
+    except(FileNotFoundError):
+        print("\nYou need to use a valid .txt file.\n\nRun 'python main.py' then specify the file or run 'python main.py path/to/valid_text_file.txt'\n")
         exit(1)
 
     return all_games
