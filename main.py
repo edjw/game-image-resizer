@@ -1,22 +1,26 @@
-from string import punctuation
-from sys import argv, version_info
-from os.path import splitext
-from os import remove, makedirs
-from time import sleep
-from boardgamegeek import BoardGameGeek
-from boardgamegeek.exceptions import BoardGameGeekError, BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError
-from PIL import Image
+try:
+    from string import punctuation
+    from sys import argv, version_info, exit
+    from os.path import splitext
+    from os import remove, makedirs
+    from time import sleep
+    from boardgamegeek import BoardGameGeek
+    from boardgamegeek.exceptions import BoardGameGeekError, BoardGameGeekAPIRetryError, BoardGameGeekAPIError, BoardGameGeekTimeoutError
+    from PIL import Image
 
-if (version_info > (3, 0)):
-    from urllib.request import urlretrieve
+    if (version_info > (3, 0)):
+        from urllib.request import urlretrieve
 
-else:
-    from urllib2 import urlopen
-    from string import maketrans
-    from os.path import isdir
-    import logging
-    logging.basicConfig()
+    else:
+        from urllib2 import urlopen
+        from string import maketrans
+        from os.path import isdir
+        import logging
+        logging.basicConfig()
 
+except(ImportError):
+    print("You need to install the boardgamegeek and pillow Python modules for this to work. Run 'pip install boardgamegeek pillow' (without quotes) before using this program.\n")
+    exit(1)
 
 def get_list_of_games():
     # list to put all game names in from games.txt
@@ -28,7 +32,7 @@ def get_list_of_games():
             all_games = [line.strip() for line in fileobject if str(line) != "\n"]
 
     else:
-        print("You need to have a specify a .txt file after main.py\nThe right command is 'python main.py path/to/file.txt' (without quotes).")
+        print("You need to specify a .txt file after main.py\nThe right command is 'python main.py path/to/file.txt' (without quotes).\n")
 
     return all_games
 
@@ -143,6 +147,7 @@ def download_images(all_names_and_links):
         game_name = game_name.translate(remove_punctuation)
 
         # replacing spaces with underscore
+        game_name = game_name.replace("  ", "_")
         game_name = game_name.replace(" ", "_")
 
         # appending file format to game name
@@ -192,8 +197,10 @@ def resize_images(games_and_image_paths, guessed_games):
 
         guessed_game = guessed_game.translate(remove_punctuation)
 
-        # replacing spaces with underscore
+        # replacing spaces with underscores
+        game_name = game_name.replace("  ", "_")
         guessed_game = guessed_game.replace(" ", "_")
+
         processed_guessed_games.append(guessed_game)
 
     for game in games_and_image_paths:
@@ -240,7 +247,7 @@ def resize_images(games_and_image_paths, guessed_games):
         print("\nFinished. Your images should be in a folder called 'game_images' now.\n")
 
     if len(processed_guessed_games) > 0:
-        print("If the program had to guess which game you meant then the images for that game are in a folder called 'game_images/check_these_images'.\n")
+        print("The program had to guess which game you meant for some games. It chose the highest ranked game that loosely matched the name you gave.\nThe images for those games are in a folder called 'game_images/check_these_images' so you can double-check them.\n")
 
 
 # Running the program

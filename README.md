@@ -26,7 +26,7 @@ This should run on Python 3 and Python 2.
 
 or
 
-`pip install boardgamegeek, pillow`
+`pip install boardgamegeek pillow`
 
 Make a text file called something like `games.txt` with a game's name on each line. It can be stored anywhere.
 
