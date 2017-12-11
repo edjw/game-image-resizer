@@ -20,6 +20,12 @@ If you make heavy use of BoardGameGeek's API, images and image hosting using thi
 
 ## How to use this
 
+Standalone builds of this are in the [dist folder](https://github.com/edjw/game-image-resizer/tree/master/dist)
+
+If you run it as as a standalone program, the image folders are added into your Home directory
+
+Alternatively run it as a script...
+
 This should run on Python 3 and Python 2. I would trust it more on Python 3, but I have tested it fairly throughly on Python 2 as well.
 
 `pipenv install boardgamegeek pillow`
@@ -32,10 +38,22 @@ Make a text file called something like `games.txt` with a game's name on each li
 
 Run `python main.py path/to/games.txt`
 
-It will save the processed images in a folder called `game_images` in the same folder as `main.py`
+If you're running this as a script, it will save the processed images in a folder called `game_images` in the same folder as `main.py`
+
+If you're running this as a standalone program, it'll put `game_images` in your home directory.
 
 Games that only loosely match a game on Board Game Geek will be saved in a subfolder of `game_images` called `game_images/check_these_games` for later checking.
 
-## To Do
+## How to build the standalone program
 
-* make it easy for others to use: packaged up for mac/windows/etc with a GUI and file picker instead of forcing use of text file
+`pip install pyinstaller`
+
+To make a single executable file that packages up everything in the app run:
+
+`pyinstaller main.py -F -n NAME_OF_APP -p VIRTUAL_ENV_FOLDER`
+
+-F makes it a single app. -n specifies the name. -p specifies other folders it should pull in resources from
+
+then
+
+`pyinstaller NAME_OF_APP.spec`
