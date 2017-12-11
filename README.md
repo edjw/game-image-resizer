@@ -20,13 +20,13 @@ If you make heavy use of BoardGameGeek's API, images and image hosting using thi
 
 ## How to use this
 
-This should run on Python 3 and Python 2.
+This should run on Python 3 and Python 2. I would trust it more on Python 3, but I have tested it fairly throughly on Python 2 as well.
 
 `pipenv install boardgamegeek pillow`
 
 or
 
-`pip install boardgamegeek pillow`
+`pip --user install boardgamegeek pillow`
 
 Make a text file called something like `games.txt` with a game's name on each line. It can be stored anywhere.
 

@@ -12,6 +12,7 @@ try:
         from urllib.request import urlretrieve
 
     else:
+        import sys
         from urllib2 import urlopen
         from string import maketrans
         from os.path import isdir
@@ -19,20 +20,34 @@ try:
         logging.basicConfig()
 
 except(ImportError):
-    print("You need to install the boardgamegeek and pillow Python modules for this to work. Run 'pip install boardgamegeek pillow' (without quotes) before using this program.\n")
+    print("\nYou need to install the boardgamegeek and pillow Python modules for this to work. Run 'pip install boardgamegeek pillow' (without quotes) before using this program.\n")
     exit(1)
+
+# Setting encoding to UTF-8 for Python 2 users
+if version_info[0] < 3:
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+
 
 def get_list_of_games():
     # list to put all game names in from games.txt
     all_games = []
 
-    if len(argv) == 2:
+    try:
+        # Py3 has this error
+        FileNotFoundError
+    except (NameError):
+        # Py2 doesn't so if hit FNFE then make it IOError
+        FileNotFoundError = IOError
+
+    try:
         game_file = argv[1]
         with open(game_file, 'r') as fileobject:
             all_games = [line.strip() for line in fileobject if str(line) != "\n"]
 
-    else:
-        print("You need to specify a .txt file after main.py\nThe right command is 'python main.py path/to/file.txt' (without quotes).\n")
+    except(FileNotFoundError, IndexError):
+        print("\nYou need to specify a .txt file after main.py\nThe right command is 'python main.py path/to/file.txt' (without quotes).\n")
+        exit(1)
 
     return all_games
 
@@ -141,10 +156,10 @@ def download_images(all_names_and_links):
         # removing punctuation from game name
         if (version_info > (3, 0)):
             remove_punctuation = str.maketrans('', '', punctuation)
+            game_name = game_name.translate(remove_punctuation)
         else:
             remove_punctuation = maketrans(punctuation, ' '*len(punctuation))
-
-        game_name = game_name.translate(remove_punctuation)
+            game_name = game_name.encode('utf-8').translate(remove_punctuation)
 
         # replacing spaces with underscore
         game_name = game_name.replace("  ", "_")
@@ -192,13 +207,13 @@ def resize_images(games_and_image_paths, guessed_games):
         # removing punctuation from game name
         if (version_info > (3, 0)):
             remove_punctuation = str.maketrans('', '', punctuation)
+            guessed_game = guessed_game.translate(remove_punctuation)
         else:
             remove_punctuation = maketrans(punctuation, ' '*len(punctuation))
-
-        guessed_game = guessed_game.translate(remove_punctuation)
+            guessed_game = guessed_game.encode('utf-8').translate(remove_punctuation)
 
         # replacing spaces with underscores
-        game_name = game_name.replace("  ", "_")
+        guessed_game = guessed_game.replace("  ", "_")
         guessed_game = guessed_game.replace(" ", "_")
 
         processed_guessed_games.append(guessed_game)
