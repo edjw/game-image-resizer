@@ -144,18 +144,12 @@ def get_image_links(all_games):
         # Wait 5 seconds between requests
         sleep(5)
 
-    if len(unfindable_games) > 0:
-        unfindable_games = ", ".join(unfindable_games)
-
-        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nThe game probably isn't in Board Game Geek's database.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n\n__________")
-
-    return all_names_and_links, guessed_games
+    return all_names_and_links, guessed_games, unfindable_games
 
 
 def download_images(all_names_and_links):
     games_downloaded_sofar = 0
     number_of_games = str(len(all_names_and_links))
-
 
     if len(all_names_and_links) > 0:
         print("\nDownloading all the images...\n")
@@ -213,7 +207,7 @@ def download_images(all_names_and_links):
     return games_and_image_paths
 
 
-def resize_images(games_and_image_paths, guessed_games):
+def resize_images(games_and_image_paths, guessed_games, unfindable_games):
 
     images_resized_sofar = 0
     number_of_images = str(len(games_and_image_paths))
@@ -241,8 +235,8 @@ def resize_images(games_and_image_paths, guessed_games):
         processed_guessed_games.append(guessed_game)
 
     for game in games_and_image_paths:
-        images_resized_sofar +=1
-        print(str(images_resized_sofar) + " / " + number_of_images )
+        images_resized_sofar += 1
+        print(str(images_resized_sofar) + " / " + number_of_images)
 
         image_file = games_and_image_paths[game]
         image = Image.open(image_file)
@@ -286,16 +280,21 @@ def resize_images(games_and_image_paths, guessed_games):
             remove(image_file)
 
     if len(games_and_image_paths) > 0:
-        print("\nFinished. Your images should be in a folder called 'game_images' now.\n")
+        print("\n__________\nFinished. Your images should be in a folder called 'game_images' now.\n")
 
     if len(processed_guessed_games) > 0:
-        print("The program had to guess which game you meant for some games. It chose the highest ranked game that loosely matched the name you gave.\nThe images for those games are in a folder called 'game_images/check_these_images' so you can double-check them.\n")
+        print("The program had to guess which game you meant for some games. It chose the highest ranked game that loosely matched the name you gave. The images for those games are in a folder called 'game_images/check_these_images' so you can double-check them.\n")
+
+    if len(unfindable_games) > 0:
+        unfindable_games = ", ".join(unfindable_games)
+
+        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nThe game probably isn't in Board Game Geek's database.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n__________")
 
 
 # Running the program
 
 if __name__ == "__main__":
     all_games = get_list_of_games()
-    all_names_and_links, guessed_games = get_image_links(all_games)
+    all_names_and_links, guessed_games, unfindable_games = get_image_links(all_games)
     games_and_image_paths = download_images(all_names_and_links)
-    resize_images(games_and_image_paths, guessed_games)
+    resize_images(games_and_image_paths, guessed_games, unfindable_games)

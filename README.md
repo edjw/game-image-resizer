@@ -22,7 +22,9 @@ If you make heavy use of BoardGameGeek's API, images and image hosting using thi
 
 Standalone builds of this are in the [dist folder](https://github.com/edjw/game-image-resizer/tree/master/dist)
 
-If you run it as as a standalone program, the image folders are added into your Home directory
+If you run it as as a standalone program on Mac, the image folders are added into your Home directory.
+
+If you run it as as a standalone program on Windows, the image folders are added into the same folder as the program.
 
 Alternatively run it as a script...
 
@@ -57,3 +59,9 @@ To make a single executable file that packages up everything in the app run:
 then
 
 `pyinstaller NAME_OF_APP.spec`
+
+For example:
+
+`pyinstaller main.py -F -n bgg_image_resizer_windows -p C:\Users\Ed\.virtualenvs\game-image-resizer-cIVL_e_t`
+
+`pyinstaller bgg_image_resizer_windows.spec`
