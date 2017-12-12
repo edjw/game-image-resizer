@@ -45,11 +45,18 @@ def get_list_of_games():
 
     except(IndexError):
         print("\nYou need to give the program a text file (.txt) with a list of games in.\n")
+
         game_file = input("Where is the text file on your computer? You can just drag and drop the file onto this window and press ENTER.\n-------\n").strip()
 
     try:
-        with open(game_file, 'r') as fileobject:
-            all_games = [line.strip() for line in fileobject if str(line) != "\n"]
+        file_format = splitext(game_file)[1]
+
+        if file_format == ".txt":
+            with open(game_file, 'r') as fileobject:
+                all_games = [line.strip() for line in fileobject if str(line) != "\n"]
+
+        else:
+            print("\nYou need to give the program a text file (.txt) with a list of games in.\n")
 
     except(FileNotFoundError):
         print("\nYou need to use a valid .txt file.\n\nRun 'python main.py' then specify the file or run 'python main.py path/to/valid_text_file.txt'\n")
@@ -146,6 +153,9 @@ def get_image_links(all_games):
 
 
 def download_images(all_names_and_links):
+    games_downloaded_sofar = 0
+    number_of_games = str(len(all_names_and_links))
+
 
     if len(all_names_and_links) > 0:
         print("\nDownloading all the images...\n")
@@ -153,6 +163,9 @@ def download_images(all_names_and_links):
     games_and_image_paths = {}
 
     for game_name in all_names_and_links:
+        games_downloaded_sofar += 1
+        print(str(games_downloaded_sofar) + " / " + number_of_games)
+
         game_image_link = all_names_and_links[game_name]
         file_name = game_image_link.split('/')[-1]  # eg pic1324609.jpg
         file_format = splitext(file_name)[1]  # eg .jpg
@@ -202,6 +215,9 @@ def download_images(all_names_and_links):
 
 def resize_images(games_and_image_paths, guessed_games):
 
+    images_resized_sofar = 0
+    number_of_images = str(len(games_and_image_paths))
+
     if len(games_and_image_paths) > 0:
         print("\nResizing all the images...\n")
 
@@ -225,6 +241,9 @@ def resize_images(games_and_image_paths, guessed_games):
         processed_guessed_games.append(guessed_game)
 
     for game in games_and_image_paths:
+        images_resized_sofar +=1
+        print(str(images_resized_sofar) + " / " + number_of_images )
+
         image_file = games_and_image_paths[game]
         image = Image.open(image_file)
 
