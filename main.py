@@ -262,7 +262,9 @@ def resize_images(games_and_image_paths, guessed_games):
         else:
             background.save("game_images/" + game + ".png")
 
-        remove(image_file)
+        file_format = splitext(image_file)[1]
+        if file_format != ".png":
+            remove(image_file)
 
     if len(games_and_image_paths) > 0:
         print("\nFinished. Your images should be in a folder called 'game_images' now.\n")
