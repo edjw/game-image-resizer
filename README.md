@@ -62,6 +62,14 @@ then
 
 For example:
 
-`pyinstaller main.py -F -n bgg_image_resizer_windows -p C:\Users\Ed\.virtualenvs\game-image-resizer-cIVL_e_t`
+On Windows
+
+`pyinstaller main.py -F -n bgg_image_resizer_windows -p C:\Users\USERNAME\.virtualenvs\game-image-resizer-cIXL_u_t`
 
 `pyinstaller bgg_image_resizer_windows.spec`
+
+On Mac
+
+`pyinstaller main.py -F -n bgg_image_resizer_mac -p /Users/USERNAME/.local/share/virtualenvs/game-image-resizer-VllgVcYq/ --exclude-module pypiwin32`
+
+`pyinstaller bgg_image_resizer_mac.spec`
