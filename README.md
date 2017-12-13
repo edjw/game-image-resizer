@@ -60,6 +60,7 @@ then
 
 `pyinstaller NAME_OF_APP.spec`
 
+
 For example:
 
 On Windows
@@ -70,6 +71,6 @@ On Windows
 
 On Mac
 
-`pyinstaller main.py -F -n bgg_image_resizer_mac -p /Users/USERNAME/.local/share/virtualenvs/game-image-resizer-VllgVcYq/ --exclude-module pypiwin32`
+`pyinstaller main.py -F -n bgg_image_resizer_mac -p /Users/USERNAME/.local/share/virtualenvs/game-image-resizer-VllgVcYq`
 
 `pyinstaller bgg_image_resizer_mac.spec`
