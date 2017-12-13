@@ -119,13 +119,14 @@ def get_image_links(all_games):
             # extract just the ids from that list and make new list
             potential_ids = [str(potential_game).split()[-1][:-1] for potential_game in potential_games]
 
-            # get the highest ranked game rank from the ids in potential_ids
-            highest_rank = min([bgg.game(game_id=potential_id).ranks[0]['value'] for potential_id in potential_ids if bgg.game(game_id=potential_id).ranks[0]['value'] is not None])
+            # get the game with most votes from the ids in potential_ids
+            highest_rank = max([bgg.game(game_id=potential_id).users_rated for potential_id in potential_ids if bgg.game(game_id=potential_id).users_rated is not None])
 
             # get the game name that has the highest rank in that list
-            game_name = [bgg.game(game_id=potential_id).name for potential_id in potential_ids if bgg.game(game_id=potential_id).ranks[0]['value'] == highest_rank]
+            game_name = [bgg.game(game_id=potential_id).name for potential_id in potential_ids if bgg.game(game_id=potential_id).users_rated == highest_rank]
 
             game_name = game_name[0]
+
             guessed_games.append(game_name)
             print("Assuming that the game you're looking for is {}...\n".format(game_name))
 
@@ -288,7 +289,7 @@ def resize_images(games_and_image_paths, guessed_games, unfindable_games):
     if len(unfindable_games) > 0:
         unfindable_games = ", ".join(unfindable_games)
 
-        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nThe game probably isn't in Board Game Geek's database.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n__________")
+        print("__________\nThese games couldn't be found: \n\n" + unfindable_games + "\n\nThe game either isn't in Board Game Geek's database or you just need to rename it to the name in their database.\n\nIf you're sure that the games you're requesting are correct and in Board Game Geek's database, try again with just those games in your 'games.txt' file.\n__________")
 
 
 # Running the program
