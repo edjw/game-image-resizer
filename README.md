@@ -28,8 +28,6 @@ If you run it as as a standalone program on Windows, the image folders are added
 
 Alternatively run it as a script...
 
-This should run on Python 3 and Python 2. I would trust it more on Python 3, but I have tested it fairly throughly on Python 2 as well.
-
 `pipenv install boardgamegeek pillow`
 
 or
