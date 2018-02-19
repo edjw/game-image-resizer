@@ -11,6 +11,7 @@ boardgamegeek = "*"
 pillow = "*"
 pyinstaller = "*"
 "pypiwin32" = "*"
+gooey = "*"
 
 
 [dev-packages]

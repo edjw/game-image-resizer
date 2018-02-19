@@ -4,3 +4,4 @@ games.txt
 __pycache__
 build
 *.spec
+unfindable_games.txt

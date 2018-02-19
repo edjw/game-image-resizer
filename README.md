@@ -60,7 +60,6 @@ then
 
 `pyinstaller NAME_OF_APP.spec`
 
-
 For example:
 
 On Windows
